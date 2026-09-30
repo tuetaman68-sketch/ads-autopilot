@@ -16,7 +16,7 @@
     --gridline:#e1e0d9; --axis:#c3c2b7;
     --accent:#4a3aa7; --accent-ink:#ffffff; --accent-soft:#efeaff; --accent-soft-border:#ddd3fb;
     --good:#0ca30c; --good-soft:#e4f6e2; --warning:#c98500; --warning-soft:#fdf0d6; --critical:#d03b3b; --critical-soft:#fbe5e5;
-    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100;
     --radius:14px; --radius-sm:9px;
     --font-display:'Sora',system-ui,-apple-system,"Segoe UI",sans-serif;
     --font-body:'Be Vietnam Pro',system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -29,7 +29,7 @@
       --gridline:#2c2c2a; --axis:#383835;
       --accent:#9085e9; --accent-ink:#14101f; --accent-soft:#241f3d; --accent-soft-border:#362d54;
       --good:#0ca30c; --good-soft:#123319; --warning:#e0a323; --warning-soft:#382b0f; --critical:#e66767; --critical-soft:#3a1c1c;
-      --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+      --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
     }
   }
   :root[data-theme="dark"]{
@@ -38,7 +38,7 @@
     --gridline:#2c2c2a; --axis:#383835;
     --accent:#9085e9; --accent-ink:#14101f; --accent-soft:#241f3d; --accent-soft-border:#362d54;
     --good:#0ca30c; --good-soft:#123319; --warning:#e0a323; --warning-soft:#382b0f; --critical:#e66767; --critical-soft:#3a1c1c;
-    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
   }
 
   body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.45;margin:0;}
@@ -69,13 +69,14 @@
   .section-title{font-size:16px;margin-bottom:14px;}
 
   /* ---- platform connect cards ---- */
-  .platform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .platform-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
   .platform-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:14px;}
   .platform-head{display:flex;align-items:center;gap:12px;}
   .platform-badge{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:16px;color:#fff;flex-shrink:0;}
   .platform-badge.fb{background:#1877F2;}
   .platform-badge.gg{background:#5f6368;}
   .platform-badge.za{background:#0068FF;}
+  .platform-badge.tt{background:#000000;}
   .platform-head h3{font-size:15px;}
   .platform-head p{font-size:12.5px;color:var(--text-muted);}
   .platform-status{display:flex;flex-direction:column;gap:8px;}
@@ -171,7 +172,7 @@
   .insights-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
   .insight-summary{font-size:13.5px;color:var(--text-secondary);background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:13px 14px;margin-bottom:16px;line-height:1.65;}
   .insight-summary b{color:var(--text);font-family:var(--font-mono);font-weight:600;}
-  .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+  .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
   .metric-card{border:1px solid var(--border);border-radius:11px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
   .metric-card .mhead{display:flex;align-items:center;gap:8px;}
   .metric-card .mhead .platform-badge{width:26px;height:26px;font-size:11px;border-radius:7px;}
@@ -199,13 +200,15 @@
 
   @media (max-width: 860px){
     .main-grid{grid-template-columns:1fr;}
-    .platform-grid{grid-template-columns:1fr;}
+    .platform-grid{grid-template-columns:1fr 1fr;}
     .stat-grid{grid-template-columns:1fr 1fr;}
     .field-grid{grid-template-columns:1fr;}
-    .metric-grid{grid-template-columns:1fr;}
+    .metric-grid{grid-template-columns:1fr 1fr;}
   }
   @media (max-width: 480px){
     .stat-grid{grid-template-columns:1fr;}
+    .platform-grid{grid-template-columns:1fr;}
+    .metric-grid{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -220,7 +223,7 @@
       </div>
       <div>
         <h1>Ads Autopilot</h1>
-        <p>Buồng lái quảng cáo đa nền tảng — Facebook · Google · Zalo</p>
+        <p>Buồng lái quảng cáo đa nền tảng — Facebook · Google · Zalo · TikTok</p>
       </div>
     </div>
     <span class="demo-chip">Bản demo giao diện</span>
@@ -228,7 +231,7 @@
 
   <div class="banner">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-    <p><strong>Đây là giao diện minh hoạ, số liệu là dữ liệu mẫu.</strong> Ở bản kết nối thật, mỗi nền tảng được xác thực qua cửa sổ đăng nhập OAuth chính thức của Meta, Google và Zalo — Ads Autopilot chỉ nhận quyền quản lý quảng cáo được bạn cấp, <strong>không bao giờ yêu cầu bạn nhập mật khẩu</strong>.</p>
+    <p><strong>Đây là giao diện minh hoạ, số liệu là dữ liệu mẫu.</strong> Ở bản kết nối thật, mỗi nền tảng được xác thực qua cửa sổ đăng nhập OAuth chính thức của Meta, Google, Zalo và TikTok — Ads Autopilot chỉ nhận quyền quản lý quảng cáo được bạn cấp, <strong>không bao giờ yêu cầu bạn nhập mật khẩu</strong>.</p>
   </div>
 
   <section aria-label="Kết nối nền tảng">
@@ -268,6 +271,17 @@
         </div>
       </article>
 
+      <article class="platform-card" data-platform="tiktok">
+        <div class="platform-head">
+          <span class="platform-badge tt">T</span>
+          <div><h3>TikTok</h3><p>TikTok Ads &amp; Spark Ads</p></div>
+        </div>
+        <div class="platform-status" data-state="disconnected">
+          <button class="btn btn-connect" type="button" data-action="connect">Kết nối TikTok Ads</button>
+          <p class="fineprint">Đăng nhập qua cửa sổ chính thức của TikTok.</p>
+        </div>
+      </article>
+
     </div>
   </section>
 
@@ -281,7 +295,7 @@
           <div class="field">
             <label for="linkInput">Dán link Fanpage / Zalo OA / Website</label>
             <div class="field-row">
-              <input type="text" id="linkInput" placeholder="facebook.com/tenshop, zalo.me/oa/..., hoặc tenshop.vn">
+              <input type="text" id="linkInput" placeholder="facebook.com/tenshop, zalo.me/oa/..., tiktok.com/@tenshop, hoặc tenshop.vn">
               <button class="btn btn-connect" type="button" id="analyzeBtn">Phân tích</button>
             </div>
           </div>
@@ -407,11 +421,13 @@
   var series1 = getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim();
   var series2 = getComputedStyle(document.documentElement).getPropertyValue('--series-2').trim();
   var series3 = getComputedStyle(document.documentElement).getPropertyValue('--series-3').trim();
+  var series4 = getComputedStyle(document.documentElement).getPropertyValue('--series-4').trim();
 
   var PLATFORMS = {
-    facebook: {name:'Facebook', color:series1, badge:'fb', pillBg:'rgba(42,120,214,.14)'},
-    google:   {name:'Google Ads', color:series2, badge:'gg', pillBg:'rgba(235,104,52,.14)'},
-    zalo:     {name:'Zalo', color:series3, badge:'za', pillBg:'rgba(27,175,122,.14)'}
+    facebook: {name:'Facebook', short:'Facebook', color:series1, badge:'fb', pillBg:'rgba(42,120,214,.14)'},
+    google:   {name:'Google Ads', short:'Google', color:series2, badge:'gg', pillBg:'rgba(235,104,52,.14)'},
+    zalo:     {name:'Zalo', short:'Zalo', color:series3, badge:'za', pillBg:'rgba(27,175,122,.14)'},
+    tiktok:   {name:'TikTok', short:'TikTok', color:series4, badge:'tt', pillBg:'rgba(237,161,0,.14)'}
   };
 
   // ---- fixed 14-day mock spend data (thousand VND) ----
@@ -419,7 +435,8 @@
   var data = {
     facebook: [520,560,610,540,600,720,690,650,710,760,730,800,770,840],
     google:   [380,400,420,410,460,470,450,500,520,510,540,560,550,590],
-    zalo:     [210,230,220,260,250,270,300,280,310,320,300,330,340,360]
+    zalo:     [210,230,220,260,250,270,300,280,310,320,300,330,340,360],
+    tiktok:   [160,170,180,175,190,200,195,205,215,210,225,235,228,240]
   };
 
   function todaySpend(key){ return data[key][data[key].length-1]; }
@@ -427,7 +444,7 @@
   function fmtK(n){ return n.toLocaleString('vi-VN'); }
 
   // ===== stat tile =====
-  var totalToday = todaySpend('facebook')+todaySpend('google')+todaySpend('zalo');
+  var totalToday = todaySpend('facebook')+todaySpend('google')+todaySpend('zalo')+todaySpend('tiktok');
   document.getElementById('statSpend').textContent = fmtVND(totalToday);
 
   // ===== legends =====
@@ -458,7 +475,7 @@
     var svg = document.getElementById('barChart');
     var W=520,H=180, padL=40, padB=24, padT=10;
     var plotW = W-padL-16, plotH = H-padT-padB;
-    var keys = ['facebook','google','zalo'];
+    var keys = Object.keys(PLATFORMS);
     var vals = keys.map(todaySpend);
     var max = Math.ceil(Math.max.apply(null,vals)/200)*200;
     var barW = plotW/keys.length*0.42;
@@ -506,7 +523,7 @@
       var xlabel = document.createElementNS(ns,'text');
       xlabel.setAttribute('x', x+barW/2); xlabel.setAttribute('y', H-6);
       xlabel.setAttribute('text-anchor','middle'); xlabel.setAttribute('class','axis-label');
-      xlabel.textContent = p.name;
+      xlabel.textContent = p.short;
       svg.appendChild(xlabel);
     });
   })();
@@ -517,7 +534,7 @@
     var W=520,H=220, padL=34, padR=8, padT=14, padB=26;
     var plotW = W-padL-padR, plotH = H-padT-padB;
     var n = days.length;
-    var allVals = data.facebook.concat(data.google,data.zalo);
+    var allVals = data.facebook.concat(data.google,data.zalo,data.tiktok);
     var max = Math.ceil(Math.max.apply(null,allVals)/200)*200;
     var ns='http://www.w3.org/2000/svg';
 
@@ -605,9 +622,10 @@
   var built = false;
   document.getElementById('toggleTable').addEventListener('click', function(){
     if(!built){
-      var html = '<table class="data-table"><thead><tr><th>Ngày</th><th>Facebook</th><th>Google Ads</th><th>Zalo</th></tr></thead><tbody>';
+      var pKeys = Object.keys(PLATFORMS);
+      var html = '<table class="data-table"><thead><tr><th>Ngày</th>'+pKeys.map(function(k){ return '<th>'+PLATFORMS[k].name+'</th>'; }).join('')+'</tr></thead><tbody>';
       days.forEach(function(d,i){
-        html += '<tr><td>'+d+'</td><td>'+fmtK(data.facebook[i])+'</td><td>'+fmtK(data.google[i])+'</td><td>'+fmtK(data.zalo[i])+'</td></tr>';
+        html += '<tr><td>'+d+'</td>'+pKeys.map(function(k){ return '<td>'+fmtK(data[k][i])+'</td>'; }).join('')+'</tr>';
       });
       html += '</tbody></table>';
       tableWrap.innerHTML = html;
@@ -619,15 +637,16 @@
   });
 
   // ===== platform connect flow (OAuth-style simulation, no passwords) =====
-  var connected = {facebook:false, google:false, zalo:false};
+  var connected = {facebook:false, google:false, zalo:false, tiktok:false};
   var mockAccounts = {
     facebook: 'Tài khoản quảng cáo Meta',
     google: 'Tài khoản Google Ads',
-    zalo: 'Tài khoản Zalo OA'
+    zalo: 'Tài khoản Zalo OA',
+    tiktok: 'Tài khoản TikTok Ads'
   };
 
-  var connectLabel = {facebook:'Kết nối bằng Facebook', google:'Kết nối Google Ads', zalo:'Kết nối Zalo OA'};
-  var officialName = {facebook:'Meta', google:'Google', zalo:'Zalo'};
+  var connectLabel = {facebook:'Kết nối bằng Facebook', google:'Kết nối Google Ads', zalo:'Kết nối Zalo OA', tiktok:'Kết nối TikTok Ads'};
+  var officialName = {facebook:'Meta', google:'Google', zalo:'Zalo', tiktok:'TikTok'};
 
   function attachConnectHandler(statusEl, platform){
     var btn = statusEl.querySelector('[data-action="connect"]');
@@ -669,13 +688,14 @@
     var u = url.toLowerCase();
     if(u.indexOf('facebook.com')>-1 || u.indexOf('fb.com')>-1) return 'facebook';
     if(u.indexOf('zalo.me')>-1 || u.indexOf('oa.zalo')>-1) return 'zalo';
+    if(u.indexOf('tiktok.com')>-1) return 'tiktok';
     return 'google';
   }
   function slugToName(url){
     var clean = url.trim().replace(/^https?:\/\//,'').replace(/^www\./,'');
     var parts = clean.split(/[\/?#]/).filter(Boolean);
     var last = parts.length ? parts[parts.length-1] : clean.split('.')[0];
-    last = last.replace(/[-_.]+/g,' ').trim();
+    last = last.replace(/^@/,'').replace(/[-_.]+/g,' ').trim();
     if(!last) last = clean.split('.')[0];
     return last.replace(/\b\w/g, function(c){ return c.toUpperCase(); }) || 'Trang của bạn';
   }
@@ -702,6 +722,7 @@
       document.getElementById('previewName').textContent = name;
       document.getElementById('previewSub').textContent = detectedPlatform==='facebook' ? 'Fanpage · '+(8+ (name.length%12))+'.'+(name.length%9)+'k lượt thích'
         : detectedPlatform==='zalo' ? 'Official Account · '+(3+(name.length%7))+'k quan tâm'
+        : detectedPlatform==='tiktok' ? 'Kênh TikTok · '+(5+(name.length%15))+'k người theo dõi'
         : 'Website · phù hợp Google Ads (Search/Display)';
       var pill = document.getElementById('previewPill');
       pill.textContent = p.name;
@@ -804,7 +825,8 @@
   var platformMetrics = {
     facebook: {ctr:1.6, cpa:46000, conversions:186, frequency:3.6},
     google:   {ctr:3.4, cpa:63000, conversions:94,  frequency:null},
-    zalo:     {ctr:2.3, cpa:29000, conversions:151, frequency:2.0}
+    zalo:     {ctr:2.3, cpa:29000, conversions:151, frequency:2.0},
+    tiktok:   {ctr:4.2, cpa:38000, conversions:112, frequency:2.8}
   };
 
   function fmtVNDFull(n){ return Math.round(n).toLocaleString('vi-VN') + ' đ'; }
