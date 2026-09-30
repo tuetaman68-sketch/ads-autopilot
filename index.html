@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ads Autopilot</title>
+<meta name="description" content="Buồng lái quảng cáo đa nền tảng: kết nối Facebook, Google Ads và Zalo qua OAuth, dán link fanpage/OA/website để tự động lên chiến dịch, theo dõi hiệu suất và nhận đề xuất tối ưu.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+  *{box-sizing:border-box;}
+  html{color-scheme:light dark;}
+  :root{
+    --bg:#f9f9f7; --surface:#fcfcfb; --surface-2:#ffffff; --border:rgba(11,11,11,0.10);
+    --text:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
+    --gridline:#e1e0d9; --axis:#c3c2b7;
+    --accent:#4a3aa7; --accent-ink:#ffffff; --accent-soft:#efeaff; --accent-soft-border:#ddd3fb;
+    --good:#0ca30c; --good-soft:#e4f6e2; --warning:#c98500; --warning-soft:#fdf0d6; --critical:#d03b3b; --critical-soft:#fbe5e5;
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+    --radius:14px; --radius-sm:9px;
+    --font-display:'Sora',system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-body:'Be Vietnam Pro',system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,"SF Mono",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d0d0d; --surface:#1a1a19; --surface-2:#141413; --border:rgba(255,255,255,0.10);
+      --text:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+      --gridline:#2c2c2a; --axis:#383835;
+      --accent:#9085e9; --accent-ink:#14101f; --accent-soft:#241f3d; --accent-soft-border:#362d54;
+      --good:#0ca30c; --good-soft:#123319; --warning:#e0a323; --warning-soft:#382b0f; --critical:#e66767; --critical-soft:#3a1c1c;
+      --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0d0d; --surface:#1a1a19; --surface-2:#141413; --border:rgba(255,255,255,0.10);
+    --text:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+    --gridline:#2c2c2a; --axis:#383835;
+    --accent:#9085e9; --accent-ink:#14101f; --accent-soft:#241f3d; --accent-soft-border:#362d54;
+    --good:#0ca30c; --good-soft:#123319; --warning:#e0a323; --warning-soft:#382b0f; --critical:#e66767; --critical-soft:#3a1c1c;
+    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+  }
+
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.45;margin:0;}
+  .page{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 60px;display:flex;flex-direction:column;gap:22px;}
+  h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-0.01em;text-wrap:balance;margin:0;}
+  p{margin:0;}
+  img{max-width:100%;}
+  .muted{color:var(--text-secondary);}
+  .fineprint{color:var(--text-muted);font-size:12.5px;line-height:1.5;}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
+
+  /* ---- topbar ---- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(155deg,var(--accent),#7a6ce0);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(74,58,167,0.28);}
+  .brand-mark svg{width:22px;height:22px;}
+  .brand h1{font-size:21px;}
+  .brand p{font-size:13px;color:var(--text-secondary);}
+  .demo-chip{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-soft-border);padding:6px 12px;border-radius:999px;white-space:nowrap;}
+
+  /* ---- banner ---- */
+  .banner{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+  .banner svg{width:18px;height:18px;flex-shrink:0;margin-top:2px;color:var(--accent);}
+  .banner p{font-size:13.5px;color:var(--text-secondary);}
+  .banner strong{color:var(--text);}
+
+  .section-title{font-size:16px;margin-bottom:14px;}
+
+  /* ---- platform connect cards ---- */
+  .platform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .platform-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:14px;}
+  .platform-head{display:flex;align-items:center;gap:12px;}
+  .platform-badge{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:16px;color:#fff;flex-shrink:0;}
+  .platform-badge.fb{background:#1877F2;}
+  .platform-badge.gg{background:#5f6368;}
+  .platform-badge.za{background:#0068FF;}
+  .platform-head h3{font-size:15px;}
+  .platform-head p{font-size:12.5px;color:var(--text-muted);}
+  .platform-status{display:flex;flex-direction:column;gap:8px;}
+  .btn{border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:filter .15s ease,background-color .15s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+  .btn:disabled{cursor:not-allowed;opacity:.6;}
+  .btn-connect{background:var(--text);color:var(--bg);}
+  .btn-connect:hover:not(:disabled){filter:brightness(1.12);}
+  .btn-primary{background:var(--accent);color:var(--accent-ink);width:100%;}
+  .btn-primary:hover:not(:disabled){filter:brightness(1.08);}
+  .btn-ghost{background:transparent;border-color:var(--border);color:var(--text-secondary);}
+  .btn-ghost:hover:not(:disabled){background:var(--surface-2);}
+  .btn-sm{padding:6px 10px;font-size:12.5px;}
+  .spinner{width:13px;height:13px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:spin .7s linear infinite;flex-shrink:0;}
+  @media (prefers-reduced-motion: reduce){.spinner{animation-duration:1.6s;}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .connected-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .connected-info{display:flex;align-items:center;gap:8px;min-width:0;}
+  .connected-info span{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .dot.good{background:var(--good);box-shadow:0 0 0 3px var(--good-soft);}
+  @media (prefers-reduced-motion: no-preference){.dot.pulse{animation:pulse 1.8s ease-in-out infinite;}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+
+  /* ---- layout ---- */
+  .main-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:18px;align-items:start;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+  .composer-col,.dashboard-col{display:flex;flex-direction:column;gap:18px;}
+
+  /* ---- composer ---- */
+  .steps{display:flex;flex-direction:column;gap:16px;}
+  .field-row{display:flex;gap:8px;}
+  .field-row input[type="text"]{flex:1;min-width:0;}
+  input[type="text"],input[type="number"],select,textarea{font-family:inherit;font-size:13.5px;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;width:100%;}
+  input::placeholder,textarea::placeholder{color:var(--text-muted);}
+  label{font-size:12.5px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;}
+  .field{min-width:0;}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  .preview-card{display:none;align-items:center;gap:12px;background:var(--surface-2);border:1px dashed var(--border);border-radius:11px;padding:12px;}
+  .preview-card.show{display:flex;}
+  .preview-avatar{width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;flex-shrink:0;}
+  .preview-meta{min-width:0;}
+  .preview-meta strong{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .preview-meta span{font-size:12px;color:var(--text-muted);}
+  .preview-platform-pill{margin-left:auto;font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;white-space:nowrap;flex-shrink:0;}
+
+  .warn-inline{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--warning);background:var(--warning-soft);border-radius:9px;padding:9px 11px;}
+  .warn-inline.show{display:flex;}
+  .warn-inline svg{width:14px;height:14px;flex-shrink:0;}
+
+  /* ---- active campaigns ---- */
+  .campaign-row{display:flex;flex-direction:column;gap:10px;padding:14px 0;border-top:1px solid var(--border);}
+  .campaign-row:first-child{border-top:none;padding-top:2px;}
+  .campaign-top{display:flex;align-items:center;gap:10px;}
+  .campaign-top .platform-badge{width:28px;height:28px;font-size:12px;border-radius:8px;}
+  .campaign-name{font-size:13.5px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pill{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .pill.good{background:var(--good-soft);color:var(--good);}
+  .pill.warning{background:var(--warning-soft);color:var(--warning);}
+  .campaign-meta{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);}
+  .campaign-meta b{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--text-secondary);font-weight:600;}
+  .campaign-actions{display:flex;gap:8px;}
+  .empty-state{font-size:13px;color:var(--text-muted);padding:6px 0 2px;}
+
+  /* ---- dashboard stats ---- */
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .stat-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:6px;}
+  .stat-tile .label{font-size:12px;color:var(--text-muted);font-weight:600;}
+  .stat-tile .value{font-family:var(--font-mono);font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .stat-delta{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;width:fit-content;}
+  .stat-delta.up{color:var(--good);}
+  .stat-delta.down{color:var(--critical);}
+  .stat-delta svg{width:12px;height:12px;}
+
+  /* ---- charts ---- */
+  .chart-card h3{font-size:14px;margin-bottom:2px;}
+  .chart-sub{font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary);}
+  .legend-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+  .chart-wrap{position:relative;}
+  svg.chart{width:100%;height:auto;display:block;overflow:visible;}
+  .axis-label{font-size:10px;fill:var(--text-muted);font-family:var(--font-body);}
+  .value-label{font-size:10.5px;fill:var(--text-secondary);font-family:var(--font-mono);font-weight:600;}
+  .gridline{stroke:var(--gridline);stroke-width:1;}
+  .hover-line{stroke:var(--axis);stroke-width:1;stroke-dasharray:3 3;opacity:0;}
+  .table-toggle{margin-top:10px;background:none;border:none;color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer;padding:4px 0;}
+  .data-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;overflow-x:auto;display:block;}
+  .data-table th,.data-table td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;font-family:var(--font-mono);white-space:nowrap;}
+  .data-table th:first-child,.data-table td:first-child{text-align:left;font-family:var(--font-body);}
+
+  /* ---- insights & recommendations ---- */
+  .insights-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .insight-summary{font-size:13.5px;color:var(--text-secondary);background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:13px 14px;margin-bottom:16px;line-height:1.65;}
+  .insight-summary b{color:var(--text);font-family:var(--font-mono);font-weight:600;}
+  .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+  .metric-card{border:1px solid var(--border);border-radius:11px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+  .metric-card .mhead{display:flex;align-items:center;gap:8px;}
+  .metric-card .mhead .platform-badge{width:26px;height:26px;font-size:11px;border-radius:7px;}
+  .metric-card .mhead strong{font-size:13px;}
+  .metric-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);}
+  .metric-row b{font-family:var(--font-mono);color:var(--text-secondary);font-weight:600;font-variant-numeric:tabular-nums;}
+  .insights-sub{font-size:13px;margin-bottom:8px;color:var(--text-secondary);font-weight:600;}
+  .rec-item{display:flex;gap:12px;padding:13px 0;border-top:1px solid var(--border);align-items:flex-start;}
+  .rec-item:first-child{border-top:none;padding-top:2px;}
+  .rec-badge{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .rec-badge svg{width:16px;height:16px;}
+  .rec-badge.critical{background:var(--critical-soft);color:var(--critical);}
+  .rec-badge.warning{background:var(--warning-soft);color:var(--warning);}
+  .rec-badge.good{background:var(--good-soft);color:var(--good);}
+  .rec-body{flex:1;min-width:0;}
+  .rec-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;}
+  .rec-title{font-size:13.5px;font-weight:600;}
+  .rec-impact{font-size:11.5px;font-weight:600;color:var(--accent);white-space:nowrap;}
+  .rec-desc{font-size:12.5px;color:var(--text-secondary);margin-top:4px;line-height:1.55;}
+  .rec-actions{margin-top:9px;}
+
+  .tooltip{position:fixed;pointer-events:none;background:var(--text);color:var(--bg);font-size:12px;padding:7px 10px;border-radius:8px;line-height:1.5;z-index:50;box-shadow:0 6px 18px rgba(0,0,0,0.25);transform:translate(-50%,-115%);white-space:nowrap;}
+  .tooltip .t-row{display:flex;align-items:center;gap:6px;}
+  .tooltip .t-row .sw{width:8px;height:8px;border-radius:2px;}
+
+  @media (max-width: 860px){
+    .main-grid{grid-template-columns:1fr;}
+    .platform-grid{grid-template-columns:1fr;}
+    .stat-grid{grid-template-columns:1fr 1fr;}
+    .field-grid{grid-template-columns:1fr;}
+    .metric-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width: 480px){
+    .stat-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 19 21 12 17 5 21 12 2Z"/></svg>
+      </div>
+      <div>
+        <h1>Ads Autopilot</h1>
+        <p>Buồng lái quảng cáo đa nền tảng — Facebook · Google · Zalo</p>
+      </div>
+    </div>
+    <span class="demo-chip">Bản demo giao diện</span>
+  </header>
+
+  <div class="banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    <p><strong>Đây là giao diện minh hoạ, số liệu là dữ liệu mẫu.</strong> Ở bản kết nối thật, mỗi nền tảng được xác thực qua cửa sổ đăng nhập OAuth chính thức của Meta, Google và Zalo — Ads Autopilot chỉ nhận quyền quản lý quảng cáo được bạn cấp, <strong>không bao giờ yêu cầu bạn nhập mật khẩu</strong>.</p>
+  </div>
+
+  <section aria-label="Kết nối nền tảng">
+    <h2 class="section-title">1. Kết nối nền tảng quảng cáo</h2>
+    <div class="platform-grid" id="platformGrid">
+
+      <article class="platform-card" data-platform="facebook">
+        <div class="platform-head">
+          <span class="platform-badge fb">f</span>
+          <div><h3>Facebook</h3><p>Fanpage &amp; Meta Ads</p></div>
+        </div>
+        <div class="platform-status" data-state="disconnected">
+          <button class="btn btn-connect" type="button" data-action="connect">Kết nối bằng Facebook</button>
+          <p class="fineprint">Đăng nhập qua cửa sổ chính thức của Meta.</p>
+        </div>
+      </article>
+
+      <article class="platform-card" data-platform="google">
+        <div class="platform-head">
+          <span class="platform-badge gg">G</span>
+          <div><h3>Google Ads</h3><p>Website &amp; Search/Display</p></div>
+        </div>
+        <div class="platform-status" data-state="disconnected">
+          <button class="btn btn-connect" type="button" data-action="connect">Kết nối Google Ads</button>
+          <p class="fineprint">Đăng nhập qua cửa sổ chính thức của Google.</p>
+        </div>
+      </article>
+
+      <article class="platform-card" data-platform="zalo">
+        <div class="platform-head">
+          <span class="platform-badge za">Z</span>
+          <div><h3>Zalo</h3><p>Official Account &amp; Zalo Ads</p></div>
+        </div>
+        <div class="platform-status" data-state="disconnected">
+          <button class="btn btn-connect" type="button" data-action="connect">Kết nối Zalo OA</button>
+          <p class="fineprint">Đăng nhập qua cửa sổ chính thức của Zalo.</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <div class="main-grid">
+
+    <div class="composer-col">
+      <div class="card">
+        <h2 class="section-title">2. Tạo chiến dịch tự động</h2>
+        <div class="steps">
+
+          <div class="field">
+            <label for="linkInput">Dán link Fanpage / Zalo OA / Website</label>
+            <div class="field-row">
+              <input type="text" id="linkInput" placeholder="facebook.com/tenshop, zalo.me/oa/..., hoặc tenshop.vn">
+              <button class="btn btn-connect" type="button" id="analyzeBtn">Phân tích</button>
+            </div>
+          </div>
+
+          <div class="preview-card" id="previewCard">
+            <div class="preview-avatar" id="previewAvatar">?</div>
+            <div class="preview-meta">
+              <strong id="previewName">—</strong>
+              <span id="previewSub">—</span>
+            </div>
+            <span class="preview-platform-pill" id="previewPill">—</span>
+          </div>
+
+          <div class="warn-inline" id="warnInline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+            <span id="warnText">Vui lòng kết nối nền tảng tương ứng trước khi chạy chiến dịch.</span>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="objective">Mục tiêu chiến dịch</label>
+              <select id="objective">
+                <option>Tăng tương tác</option>
+                <option>Tin nhắn / Chat</option>
+                <option>Chuyển đổi (mua hàng, để lại SĐT)</option>
+                <option>Lưu lượng truy cập web</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="budget">Ngân sách / ngày (VND)</label>
+              <input type="number" id="budget" value="300000" min="50000" step="10000">
+            </div>
+            <div class="field">
+              <label for="days">Số ngày chạy</label>
+              <input type="number" id="days" value="7" min="1" max="90">
+            </div>
+            <div class="field">
+              <label for="audience">Đối tượng mục tiêu (tuỳ chọn)</label>
+              <input type="text" id="audience" placeholder="VD: Nữ 22-40, Hà Nội">
+            </div>
+          </div>
+
+          <button class="btn btn-primary" type="button" id="launchBtn" disabled>Bắt đầu tự động chạy</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Chiến dịch đang chạy</h2>
+        <div id="campaignList"></div>
+      </div>
+    </div>
+
+    <div class="dashboard-col">
+      <div class="stat-grid">
+        <div class="stat-tile">
+          <span class="label">Tổng chi tiêu hôm nay</span>
+          <span class="value" id="statSpend">—</span>
+          <span class="stat-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+12% so với hôm qua</span>
+        </div>
+        <div class="stat-tile">
+          <span class="label">Tổng tiếp cận</span>
+          <span class="value">128.400</span>
+          <span class="stat-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+8% so với hôm qua</span>
+        </div>
+        <div class="stat-tile">
+          <span class="label">Lượt click</span>
+          <span class="value">3.214</span>
+          <span class="stat-delta down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>-3% so với hôm qua</span>
+        </div>
+        <div class="stat-tile">
+          <span class="label">Tỷ lệ chuyển đổi</span>
+          <span class="value">4,8%</span>
+          <span class="stat-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+0,6 điểm</span>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <h3>Phân bổ chi tiêu hôm nay theo nền tảng</h3>
+        <p class="chart-sub">Đơn vị: nghìn đồng</p>
+        <div class="legend" id="barLegend"></div>
+        <div class="chart-wrap"><svg class="chart" id="barChart" viewBox="0 0 520 180" role="img" aria-label="Biểu đồ chi tiêu theo nền tảng"></svg></div>
+      </div>
+
+      <div class="card chart-card">
+        <h3>Xu hướng chi tiêu 14 ngày qua</h3>
+        <p class="chart-sub">Đơn vị: nghìn đồng</p>
+        <div class="legend" id="lineLegend"></div>
+        <div class="chart-wrap"><svg class="chart" id="lineChart" viewBox="0 0 520 220" role="img" aria-label="Biểu đồ xu hướng chi tiêu 14 ngày"></svg></div>
+        <button class="table-toggle" id="toggleTable" type="button">Xem dữ liệu dạng bảng</button>
+        <div id="tableWrap" hidden></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section aria-label="Phân tích và đề xuất tối ưu">
+    <div class="card" id="insightsCard">
+      <div class="insights-head">
+        <div>
+          <h2 class="section-title" style="margin-bottom:4px">3. Phân tích &amp; đề xuất tối ưu</h2>
+          <p class="chart-sub" id="insightsUpdated">Dựa trên dữ liệu 14 ngày gần nhất</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button" id="reanalyzeBtn">Phân tích lại</button>
+      </div>
+
+      <p class="insight-summary" id="insightSummary">—</p>
+
+      <div class="metric-grid" id="metricGrid"></div>
+
+      <h3 class="insights-sub">Đề xuất hành động, xếp theo mức ưu tiên</h3>
+      <div id="recommendationList"></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="tooltip" id="tooltip" hidden></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var series1 = getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim();
+  var series2 = getComputedStyle(document.documentElement).getPropertyValue('--series-2').trim();
+  var series3 = getComputedStyle(document.documentElement).getPropertyValue('--series-3').trim();
+
+  var PLATFORMS = {
+    facebook: {name:'Facebook', color:series1, badge:'fb', pillBg:'rgba(42,120,214,.14)'},
+    google:   {name:'Google Ads', color:series2, badge:'gg', pillBg:'rgba(235,104,52,.14)'},
+    zalo:     {name:'Zalo', color:series3, badge:'za', pillBg:'rgba(27,175,122,.14)'}
+  };
+
+  // ---- fixed 14-day mock spend data (thousand VND) ----
+  var days = ['18/9','19/9','20/9','21/9','22/9','23/9','24/9','25/9','26/9','27/9','28/9','29/9','30/9','Hôm nay'];
+  var data = {
+    facebook: [520,560,610,540,600,720,690,650,710,760,730,800,770,840],
+    google:   [380,400,420,410,460,470,450,500,520,510,540,560,550,590],
+    zalo:     [210,230,220,260,250,270,300,280,310,320,300,330,340,360]
+  };
+
+  function todaySpend(key){ return data[key][data[key].length-1]; }
+  function fmtVND(n){ return (n*1000).toLocaleString('vi-VN') + ' đ'; }
+  function fmtK(n){ return n.toLocaleString('vi-VN'); }
+
+  // ===== stat tile =====
+  var totalToday = todaySpend('facebook')+todaySpend('google')+todaySpend('zalo');
+  document.getElementById('statSpend').textContent = fmtVND(totalToday);
+
+  // ===== legends =====
+  function buildLegend(el){
+    Object.keys(PLATFORMS).forEach(function(k){
+      var p = PLATFORMS[k];
+      var item = document.createElement('span');
+      item.className='legend-item';
+      item.innerHTML = '<span class="legend-swatch" style="background:'+p.color+'"></span>'+p.name;
+      el.appendChild(item);
+    });
+  }
+  buildLegend(document.getElementById('barLegend'));
+  buildLegend(document.getElementById('lineLegend'));
+
+  // ===== tooltip helper =====
+  var tooltip = document.getElementById('tooltip');
+  function showTooltip(x,y,html){
+    tooltip.innerHTML = html;
+    tooltip.style.left = x+'px';
+    tooltip.style.top = y+'px';
+    tooltip.hidden = false;
+  }
+  function hideTooltip(){ tooltip.hidden = true; }
+
+  // ===== bar chart =====
+  (function(){
+    var svg = document.getElementById('barChart');
+    var W=520,H=180, padL=40, padB=24, padT=10;
+    var plotW = W-padL-16, plotH = H-padT-padB;
+    var keys = ['facebook','google','zalo'];
+    var vals = keys.map(todaySpend);
+    var max = Math.ceil(Math.max.apply(null,vals)/200)*200;
+    var barW = plotW/keys.length*0.42;
+    var ns='http://www.w3.org/2000/svg';
+
+    var ticks=4;
+    for(var i=0;i<=ticks;i++){
+      var y = padT + plotH - (plotH*i/ticks);
+      var gl = document.createElementNS(ns,'line');
+      gl.setAttribute('x1',padL); gl.setAttribute('x2',W-8); gl.setAttribute('y1',y); gl.setAttribute('y2',y);
+      gl.setAttribute('class','gridline');
+      svg.appendChild(gl);
+      var lbl = document.createElementNS(ns,'text');
+      lbl.setAttribute('x',padL-8); lbl.setAttribute('y',y+3); lbl.setAttribute('text-anchor','end');
+      lbl.setAttribute('class','axis-label');
+      lbl.textContent = fmtK(Math.round(max*i/ticks));
+      svg.appendChild(lbl);
+    }
+
+    keys.forEach(function(k,i){
+      var p = PLATFORMS[k];
+      var v = vals[i];
+      var slot = plotW/keys.length;
+      var x = padL + slot*i + (slot-barW)/2;
+      var barH = plotH * (v/max);
+      var y = padT + plotH - barH;
+
+      var rect = document.createElementNS(ns,'rect');
+      rect.setAttribute('x',x); rect.setAttribute('y',y);
+      rect.setAttribute('width',barW); rect.setAttribute('height',barH);
+      rect.setAttribute('rx',4); rect.setAttribute('fill',p.color);
+      rect.style.cursor='pointer';
+      rect.addEventListener('mousemove',function(e){
+        showTooltip(e.clientX, e.clientY, '<div class="t-row"><span class="sw" style="background:'+p.color+'"></span>'+p.name+': <b style="font-family:var(--font-mono)">'+fmtVND(v)+'</b></div>');
+      });
+      rect.addEventListener('mouseleave',hideTooltip);
+      svg.appendChild(rect);
+
+      var vlabel = document.createElementNS(ns,'text');
+      vlabel.setAttribute('x', x+barW/2); vlabel.setAttribute('y', y-6);
+      vlabel.setAttribute('text-anchor','middle'); vlabel.setAttribute('class','value-label');
+      vlabel.textContent = fmtK(v);
+      svg.appendChild(vlabel);
+
+      var xlabel = document.createElementNS(ns,'text');
+      xlabel.setAttribute('x', x+barW/2); xlabel.setAttribute('y', H-6);
+      xlabel.setAttribute('text-anchor','middle'); xlabel.setAttribute('class','axis-label');
+      xlabel.textContent = p.name;
+      svg.appendChild(xlabel);
+    });
+  })();
+
+  // ===== line chart =====
+  (function(){
+    var svg = document.getElementById('lineChart');
+    var W=520,H=220, padL=34, padR=8, padT=14, padB=26;
+    var plotW = W-padL-padR, plotH = H-padT-padB;
+    var n = days.length;
+    var allVals = data.facebook.concat(data.google,data.zalo);
+    var max = Math.ceil(Math.max.apply(null,allVals)/200)*200;
+    var ns='http://www.w3.org/2000/svg';
+
+    function xAt(i){ return padL + plotW*(i/(n-1)); }
+    function yAt(v){ return padT + plotH - plotH*(v/max); }
+
+    var ticks=4;
+    for(var i=0;i<=ticks;i++){
+      var y = padT + plotH - (plotH*i/ticks);
+      var gl = document.createElementNS(ns,'line');
+      gl.setAttribute('x1',padL); gl.setAttribute('x2',W-padR); gl.setAttribute('y1',y); gl.setAttribute('y2',y);
+      gl.setAttribute('class','gridline');
+      svg.appendChild(gl);
+      var lbl = document.createElementNS(ns,'text');
+      lbl.setAttribute('x',padL-8); lbl.setAttribute('y',y+3); lbl.setAttribute('text-anchor','end');
+      lbl.setAttribute('class','axis-label');
+      lbl.textContent = fmtK(Math.round(max*i/ticks));
+      svg.appendChild(lbl);
+    }
+    [0, n-1].forEach(function(i){
+      var xlabel = document.createElementNS(ns,'text');
+      xlabel.setAttribute('x', xAt(i)); xlabel.setAttribute('y', H-6);
+      xlabel.setAttribute('text-anchor', i===0?'start':'end'); xlabel.setAttribute('class','axis-label');
+      xlabel.textContent = days[i];
+      svg.appendChild(xlabel);
+    });
+
+    Object.keys(PLATFORMS).forEach(function(k){
+      var p = PLATFORMS[k];
+      var pts = data[k].map(function(v,i){ return xAt(i)+','+yAt(v); }).join(' ');
+      var poly = document.createElementNS(ns,'polyline');
+      poly.setAttribute('points',pts);
+      poly.setAttribute('fill','none');
+      poly.setAttribute('stroke',p.color);
+      poly.setAttribute('stroke-width','2');
+      poly.setAttribute('stroke-linejoin','round');
+      poly.setAttribute('stroke-linecap','round');
+      svg.appendChild(poly);
+
+      var lastV = data[k][n-1];
+      var dot = document.createElementNS(ns,'circle');
+      dot.setAttribute('cx',xAt(n-1)); dot.setAttribute('cy',yAt(lastV)); dot.setAttribute('r',4);
+      dot.setAttribute('fill',p.color); dot.setAttribute('stroke','var(--surface)'); dot.setAttribute('stroke-width','2');
+      svg.appendChild(dot);
+
+      var endLabel = document.createElementNS(ns,'text');
+      endLabel.setAttribute('x', xAt(n-1)); endLabel.setAttribute('y', yAt(lastV)-9);
+      endLabel.setAttribute('text-anchor','end'); endLabel.setAttribute('class','value-label');
+      endLabel.setAttribute('fill', p.color); endLabel.style.fill = p.color;
+      endLabel.textContent = fmtK(lastV);
+      svg.appendChild(endLabel);
+    });
+
+    var hoverLine = document.createElementNS(ns,'line');
+    hoverLine.setAttribute('class','hover-line');
+    hoverLine.setAttribute('y1',padT); hoverLine.setAttribute('y2',padT+plotH);
+    svg.appendChild(hoverLine);
+
+    var overlay = document.createElementNS(ns,'rect');
+    overlay.setAttribute('x',padL); overlay.setAttribute('y',padT);
+    overlay.setAttribute('width',plotW); overlay.setAttribute('height',plotH);
+    overlay.setAttribute('fill','transparent');
+    overlay.style.cursor='crosshair';
+    svg.appendChild(overlay);
+
+    overlay.addEventListener('mousemove', function(e){
+      var rect = svg.getBoundingClientRect();
+      var scaleX = W/rect.width;
+      var relX = (e.clientX-rect.left)*scaleX;
+      var i = Math.round((relX-padL)/plotW*(n-1));
+      i = Math.max(0, Math.min(n-1,i));
+      var xPix = xAt(i);
+      hoverLine.setAttribute('x1',xPix); hoverLine.setAttribute('x2',xPix); hoverLine.style.opacity='1';
+      var rows = Object.keys(PLATFORMS).map(function(k){
+        var p = PLATFORMS[k];
+        return '<div class="t-row"><span class="sw" style="background:'+p.color+'"></span>'+p.name+': <b style="font-family:var(--font-mono)">'+fmtK(data[k][i])+'k</b></div>';
+      }).join('');
+      showTooltip(e.clientX, e.clientY, '<div style="font-weight:600;margin-bottom:4px">'+days[i]+'</div>'+rows);
+    });
+    overlay.addEventListener('mouseleave', function(){ hoverLine.style.opacity='0'; hideTooltip(); });
+  })();
+
+  // ===== data table toggle =====
+  var tableWrap = document.getElementById('tableWrap');
+  var built = false;
+  document.getElementById('toggleTable').addEventListener('click', function(){
+    if(!built){
+      var html = '<table class="data-table"><thead><tr><th>Ngày</th><th>Facebook</th><th>Google Ads</th><th>Zalo</th></tr></thead><tbody>';
+      days.forEach(function(d,i){
+        html += '<tr><td>'+d+'</td><td>'+fmtK(data.facebook[i])+'</td><td>'+fmtK(data.google[i])+'</td><td>'+fmtK(data.zalo[i])+'</td></tr>';
+      });
+      html += '</tbody></table>';
+      tableWrap.innerHTML = html;
+      built = true;
+    }
+    var hidden = tableWrap.hidden;
+    tableWrap.hidden = !hidden;
+    this.textContent = hidden ? 'Ẩn dữ liệu dạng bảng' : 'Xem dữ liệu dạng bảng';
+  });
+
+  // ===== platform connect flow (OAuth-style simulation, no passwords) =====
+  var connected = {facebook:false, google:false, zalo:false};
+  var mockAccounts = {
+    facebook: 'Tài khoản quảng cáo Meta',
+    google: 'Tài khoản Google Ads',
+    zalo: 'Tài khoản Zalo OA'
+  };
+
+  var connectLabel = {facebook:'Kết nối bằng Facebook', google:'Kết nối Google Ads', zalo:'Kết nối Zalo OA'};
+  var officialName = {facebook:'Meta', google:'Google', zalo:'Zalo'};
+
+  function attachConnectHandler(statusEl, platform){
+    var btn = statusEl.querySelector('[data-action="connect"]');
+    btn.addEventListener('click', function(){
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Đang mở cửa sổ đăng nhập…';
+      setTimeout(function(){
+        connected[platform] = true;
+        statusEl.setAttribute('data-state','connected');
+        statusEl.innerHTML =
+          '<div class="connected-row">' +
+            '<div class="connected-info"><span class="dot good pulse"></span><span>'+mockAccounts[platform]+'</span></div>' +
+            '<button class="btn btn-ghost btn-sm" type="button" data-action="disconnect">Ngắt kết nối</button>' +
+          '</div>' +
+          '<p class="fineprint">Đã cấp quyền quản lý quảng cáo qua OAuth — không lưu mật khẩu.</p>';
+        statusEl.querySelector('[data-action="disconnect"]').addEventListener('click', function(){
+          connected[platform] = false;
+          statusEl.setAttribute('data-state','disconnected');
+          statusEl.innerHTML =
+            '<button class="btn btn-connect" type="button" data-action="connect">'+connectLabel[platform]+'</button>' +
+            '<p class="fineprint">Đăng nhập qua cửa sổ chính thức của '+officialName[platform]+'.</p>';
+          attachConnectHandler(statusEl, platform);
+          evaluateLaunchState();
+        });
+        evaluateLaunchState();
+      }, 900);
+    });
+  }
+
+  document.querySelectorAll('.platform-card').forEach(function(card){
+    var platform = card.getAttribute('data-platform');
+    var statusEl = card.querySelector('.platform-status');
+    attachConnectHandler(statusEl, platform);
+  });
+
+  // ===== analyze link =====
+  var detectedPlatform = null;
+  function detectPlatform(url){
+    var u = url.toLowerCase();
+    if(u.indexOf('facebook.com')>-1 || u.indexOf('fb.com')>-1) return 'facebook';
+    if(u.indexOf('zalo.me')>-1 || u.indexOf('oa.zalo')>-1) return 'zalo';
+    return 'google';
+  }
+  function slugToName(url){
+    var clean = url.trim().replace(/^https?:\/\//,'').replace(/^www\./,'');
+    var parts = clean.split(/[\/?#]/).filter(Boolean);
+    var last = parts.length ? parts[parts.length-1] : clean.split('.')[0];
+    last = last.replace(/[-_.]+/g,' ').trim();
+    if(!last) last = clean.split('.')[0];
+    return last.replace(/\b\w/g, function(c){ return c.toUpperCase(); }) || 'Trang của bạn';
+  }
+
+  var analyzeBtn = document.getElementById('analyzeBtn');
+  var previewCard = document.getElementById('previewCard');
+  var launchBtn = document.getElementById('launchBtn');
+  var warnInline = document.getElementById('warnInline');
+  var warnText = document.getElementById('warnText');
+
+  analyzeBtn.addEventListener('click', function(){
+    var url = document.getElementById('linkInput').value.trim();
+    if(!url) return;
+    analyzeBtn.disabled = true;
+    var original = analyzeBtn.textContent;
+    analyzeBtn.innerHTML = '<span class="spinner"></span>';
+    setTimeout(function(){
+      analyzeBtn.disabled = false;
+      analyzeBtn.textContent = original;
+      detectedPlatform = detectPlatform(url);
+      var p = PLATFORMS[detectedPlatform];
+      var name = slugToName(url);
+      document.getElementById('previewAvatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('previewName').textContent = name;
+      document.getElementById('previewSub').textContent = detectedPlatform==='facebook' ? 'Fanpage · '+(8+ (name.length%12))+'.'+(name.length%9)+'k lượt thích'
+        : detectedPlatform==='zalo' ? 'Official Account · '+(3+(name.length%7))+'k quan tâm'
+        : 'Website · phù hợp Google Ads (Search/Display)';
+      var pill = document.getElementById('previewPill');
+      pill.textContent = p.name;
+      pill.style.background = p.pillBg;
+      pill.style.color = p.color;
+      previewCard.classList.add('show');
+      evaluateLaunchState();
+    }, 700);
+  });
+
+  function evaluateLaunchState(){
+    if(!detectedPlatform){ launchBtn.disabled = true; warnInline.classList.remove('show'); return; }
+    if(connected[detectedPlatform]){
+      launchBtn.disabled = false;
+      warnInline.classList.remove('show');
+    } else {
+      launchBtn.disabled = true;
+      warnText.textContent = 'Vui lòng kết nối '+PLATFORMS[detectedPlatform].name+' ở bước 1 trước khi chạy chiến dịch.';
+      warnInline.classList.add('show');
+    }
+  }
+
+  // ===== launch campaign =====
+  var campaignList = document.getElementById('campaignList');
+  var campaigns = [];
+  var counter = 0;
+
+  function renderCampaigns(){
+    if(!campaigns.length){
+      campaignList.innerHTML = '<p class="empty-state">Chưa có chiến dịch nào — tạo chiến dịch đầu tiên ở form bên trên.</p>';
+      return;
+    }
+    campaignList.innerHTML = campaigns.map(function(c){
+      var p = PLATFORMS[c.platform];
+      var pct = Math.min(100, Math.round(c.spent/(c.budget*c.days)*100));
+      return (
+        '<div class="campaign-row">' +
+          '<div class="campaign-top">' +
+            '<span class="platform-badge '+p.badge+'">'+p.name.charAt(0)+'</span>' +
+            '<span class="campaign-name">'+c.name+'</span>' +
+            (c.status==='running'
+              ? '<span class="pill good"><span class="dot good pulse" style="width:6px;height:6px"></span>Đang chạy</span>'
+              : '<span class="pill warning">Tạm dừng</span>') +
+          '</div>' +
+          '<div class="campaign-meta">' +
+            '<span>Mục tiêu: '+c.objective+'</span>' +
+            '<span>Ngân sách: <b>'+fmtVND(c.budget/1000)+'</b>/ngày</span>' +
+            '<span>Đã chi: <b>'+c.spent.toLocaleString('vi-VN')+' đ</b> ('+pct+'%)</span>' +
+          '</div>' +
+          '<div class="campaign-actions">' +
+            '<button class="btn btn-ghost btn-sm" type="button" data-toggle="'+c.id+'">'+(c.status==='running'?'Tạm dừng':'Tiếp tục')+'</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+    campaignList.querySelectorAll('[data-toggle]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = Number(btn.getAttribute('data-toggle'));
+        campaigns.forEach(function(c){ if(c.id===id) c.status = c.status==='running' ? 'paused' : 'running'; });
+        renderCampaigns();
+      });
+    });
+  }
+  renderCampaigns();
+
+  launchBtn.addEventListener('click', function(){
+    if(launchBtn.disabled) return;
+    counter++;
+    campaigns.unshift({
+      id: counter,
+      platform: detectedPlatform,
+      name: document.getElementById('previewName').textContent,
+      objective: document.getElementById('objective').value,
+      budget: Number(document.getElementById('budget').value) || 100000,
+      days: Number(document.getElementById('days').value) || 1,
+      spent: 0,
+      status: 'running'
+    });
+    renderCampaigns();
+    launchBtn.textContent = 'Đã bắt đầu chạy ✓';
+    setTimeout(function(){ launchBtn.textContent = 'Bắt đầu tự động chạy'; }, 1600);
+  });
+
+  // simulate live spend ticking for running campaigns
+  setInterval(function(){
+    var changed = false;
+    campaigns.forEach(function(c){
+      if(c.status==='running'){
+        var cap = c.budget*c.days;
+        if(c.spent < cap){
+          c.spent = Math.min(cap, c.spent + Math.round(c.budget/1000*3 + Math.random()*c.budget/1000*2));
+          changed = true;
+        }
+      }
+    });
+    if(changed) renderCampaigns();
+  }, 2500);
+
+  // ===== read data, analyze, recommend =====
+  var platformMetrics = {
+    facebook: {ctr:1.6, cpa:46000, conversions:186, frequency:3.6},
+    google:   {ctr:3.4, cpa:63000, conversions:94,  frequency:null},
+    zalo:     {ctr:2.3, cpa:29000, conversions:151, frequency:2.0}
+  };
+
+  function fmtVNDFull(n){ return Math.round(n).toLocaleString('vi-VN') + ' đ'; }
+  function weekAvg(arr, start){ var s = arr.slice(start, start+7); return s.reduce(function(a,b){ return a+b; },0)/7; }
+  function wowGrowth(key){
+    var arr = data[key];
+    var prev = weekAvg(arr,0), recent = weekAvg(arr,7);
+    return (recent-prev)/prev*100;
+  }
+  function totalSpend14(key){ return data[key].reduce(function(a,b){ return a+b; },0); }
+
+  var severityIcon = {
+    critical:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>',
+    warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>',
+    good:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>'
+  };
+
+  function buildRecommendations(){
+    var recs = [];
+    var keys = Object.keys(PLATFORMS);
+
+    keys.forEach(function(k){
+      var m = platformMetrics[k], p = PLATFORMS[k];
+      if(m.frequency && m.frequency >= 3){
+        recs.push({
+          severity: m.frequency >= 3.5 ? 'critical' : 'warning',
+          title: 'Làm mới creative cho '+p.name+' — tần suất đã đạt '+m.frequency.toFixed(1)+' lần/người',
+          desc: 'Tần suất hiển thị cao là dấu hiệu quảng cáo đang bão hoà (ad fatigue): người xem thấy lại cùng một mẫu quảng cáo nhiều lần khiến CTR giảm dần và CPA tăng. Thay hình ảnh/video hoặc mở rộng tệp đối tượng trong 2-3 ngày tới.',
+          impact: 'Giảm ~10-15% CPA'
+        });
+      }
+    });
+
+    var byCpa = keys.slice().sort(function(a,b){ return platformMetrics[a].cpa - platformMetrics[b].cpa; });
+    var bestK = byCpa[0], worstK = byCpa[byCpa.length-1];
+    var bestP = PLATFORMS[bestK], worstP = PLATFORMS[worstK];
+    var diffPct = Math.round((platformMetrics[worstK].cpa - platformMetrics[bestK].cpa) / platformMetrics[worstK].cpa * 100);
+
+    recs.push({
+      severity:'good',
+      title:'Tăng ngân sách cho '+bestP.name+' — CPA thấp nhất hệ thống',
+      desc: bestP.name+' đang đạt chi phí mỗi chuyển đổi '+fmtVNDFull(platformMetrics[bestK].cpa)+', thấp hơn '+diffPct+'% so với '+worstP.name+'. Dịch chuyển thêm 15-20% ngân sách sang kênh này để tăng tổng số chuyển đổi với cùng chi phí.',
+      impact:'+15-20% chuyển đổi'
+    });
+    recs.push({
+      severity:'warning',
+      title:'Rà soát chi tiêu '+worstP.name+' — CPA cao nhất',
+      desc: worstP.name+' có chi phí mỗi chuyển đổi '+fmtVNDFull(platformMetrics[worstK].cpa)+'. Kiểm tra các nhóm quảng cáo/từ khoá có CTR dưới 2% và tạm dừng để cắt phần chi tiêu kém hiệu quả.',
+      impact:'Tiết kiệm ước tính 10-20%'
+    });
+
+    keys.forEach(function(k){
+      var m = platformMetrics[k], p = PLATFORMS[k];
+      if(m.ctr < 2 && k !== worstK){
+        recs.push({
+          severity:'warning',
+          title:'CTR '+p.name+' đang thấp ('+m.ctr+'%)',
+          desc:'Thử A/B tiêu đề, hình ảnh hoặc lời kêu gọi hành động (CTA) mới trước khi tăng ngân sách, để tránh đổ thêm tiền vào creative chưa hiệu quả.',
+          impact:'+0.3-0.8 điểm CTR'
+        });
+      }
+    });
+
+    keys.forEach(function(k){
+      var g = wowGrowth(k);
+      if(g >= 25){
+        recs.push({
+          severity:'good',
+          title: PLATFORMS[k].name+' đang tăng trưởng nhanh (+'+Math.round(g)+'% so với tuần trước)',
+          desc:'Theo dõi CPA và tần suất hiển thị hàng ngày trong lúc scale — nếu CPA tăng quá 15% so với hiện tại, giữ nguyên ngân sách thay vì tiếp tục tăng thêm.',
+          impact:'Theo dõi sát 3-5 ngày tới'
+        });
+      }
+    });
+
+    var order = {critical:0, warning:1, good:2};
+    recs.sort(function(a,b){ return order[a.severity]-order[b.severity]; });
+    return recs;
+  }
+
+  function renderInsights(){
+    document.getElementById('insightsUpdated').textContent =
+      'Cập nhật lúc '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})+' · dữ liệu 14 ngày gần nhất';
+
+    var totalAll=0, totalPrev=0, totalRecent=0;
+    Object.keys(PLATFORMS).forEach(function(k){
+      totalAll += totalSpend14(k);
+      totalPrev += weekAvg(data[k],0)*7;
+      totalRecent += weekAvg(data[k],7)*7;
+    });
+    var growthPct = Math.round((totalRecent-totalPrev)/totalPrev*100);
+    var byCpa = Object.keys(platformMetrics).sort(function(a,b){ return platformMetrics[a].cpa-platformMetrics[b].cpa; });
+    var bestK = byCpa[0], worstK = byCpa[byCpa.length-1];
+    var diffPct = Math.round((platformMetrics[worstK].cpa-platformMetrics[bestK].cpa)/platformMetrics[worstK].cpa*100);
+
+    document.getElementById('insightSummary').innerHTML =
+      'Tổng chi tiêu 14 ngày: <b>'+fmtVND(totalAll)+'</b>, tuần gần đây '+(growthPct>=0?'tăng':'giảm')+' <b>'+Math.abs(growthPct)+'%</b> so với tuần trước đó. '+
+      '<b>'+PLATFORMS[bestK].name+'</b> đang là kênh hiệu quả nhất với CPA <b>'+fmtVNDFull(platformMetrics[bestK].cpa)+'</b>, thấp hơn <b>'+diffPct+'%</b> so với '+PLATFORMS[worstK].name+'.';
+
+    document.getElementById('metricGrid').innerHTML = Object.keys(PLATFORMS).map(function(k){
+      var p = PLATFORMS[k], m = platformMetrics[k];
+      var g = Math.round(wowGrowth(k));
+      return '<div class="metric-card">'+
+        '<div class="mhead"><span class="platform-badge '+p.badge+'">'+p.name.charAt(0)+'</span><strong>'+p.name+'</strong>'+
+        '<span class="stat-delta '+(g>=0?'up':'down')+'" style="margin-left:auto;font-size:11px">'+(g>=0?'+':'')+g+'%</span></div>'+
+        '<div class="metric-row"><span>CPA</span><b>'+fmtVNDFull(m.cpa)+'</b></div>'+
+        '<div class="metric-row"><span>CTR</span><b>'+m.ctr+'%</b></div>'+
+        '<div class="metric-row"><span>Chuyển đổi</span><b>'+m.conversions+'</b></div>'+
+        '<div class="metric-row"><span>Tần suất</span><b>'+(m.frequency ? m.frequency.toFixed(1)+'x' : '—')+'</b></div>'+
+      '</div>';
+    }).join('');
+
+    document.getElementById('recommendationList').innerHTML = buildRecommendations().map(function(r){
+      return '<div class="rec-item">'+
+        '<div class="rec-badge '+r.severity+'">'+severityIcon[r.severity]+'</div>'+
+        '<div class="rec-body">'+
+          '<div class="rec-top"><span class="rec-title">'+r.title+'</span><span class="rec-impact">'+r.impact+'</span></div>'+
+          '<p class="rec-desc">'+r.desc+'</p>'+
+          '<div class="rec-actions"><button class="btn btn-ghost btn-sm" type="button" data-apply>Áp dụng đề xuất</button></div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+
+    document.querySelectorAll('[data-apply]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        btn.textContent = 'Đã áp dụng ✓';
+        btn.disabled = true;
+      });
+    });
+  }
+
+  document.getElementById('reanalyzeBtn').addEventListener('click', function(){
+    var btn = this;
+    var original = btn.textContent;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Đang phân tích…';
+    setTimeout(function(){
+      btn.disabled = false;
+      btn.textContent = original;
+      renderInsights();
+    }, 900);
+  });
+
+  renderInsights();
+
+})();
+</script>
+</body>
+</html>
